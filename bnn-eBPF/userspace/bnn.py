@@ -18,7 +18,7 @@ import json
 
 warnings.filterwarnings('ignore')
 
-# --- CONFIGURE ---
+
 DATA_CSV = '/home/sonnguyen/workspace/BNN/bnn-eBPF/userspace/DDOS2017.csv'
 BATCH_SIZE = 2048
 NUM_EPOCHS = 20
@@ -41,7 +41,7 @@ SELECTED_FEATURES = [
 ]
 
 
-# --- BNN ARCH ---
+#  BNN ARCH 
 class BinarizeActivation(torch.autograd.Function):
     @staticmethod
     def forward(ctx, input):
@@ -125,7 +125,6 @@ def main():
     sorted_scores = feat_importances['F_Score'].tolist()
     
     plt.figure(figsize=(10, 6))
-    # Vẽ bar chart (Horizontal bar plot nhìn sẽ rõ tên hơn)
     sns.barplot(x=sorted_scores, y=sorted_names, palette='viridis')
     plt.xlabel('F-Score')
     plt.title('Top Selected Features ')
@@ -148,12 +147,12 @@ def main():
     test_dataset = TensorDataset(X_test_tensor, y_test_tensor)
     test_loader = DataLoader(test_dataset, batch_size=BATCH_SIZE)
 
-    # --- INIT MODEL ---
+    #  INIT MODEL 
     model = BNN_MLP(n_features, n_hidden=HIDDEN)
     optimizer = optim.Adam(model.parameters(), lr=LR)
     scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.5, patience=3)
 
-    # --- TRAIN SETUP ---
+    #TRAIN SETUP 
     def square_hinge_loss(y_pred, y_true):
         return torch.mean(torch.clamp(1 - y_true * y_pred, min=0) ** 2)
 
@@ -164,7 +163,7 @@ def main():
         'val_prec': [], 'val_rec': [], 'val_f1': []
     }
     
-        # ===== TRAIN LOOP =====
+        #TRAIN LOOP
     for epoch in range(NUM_EPOCHS):
         model.train()
         total_loss = 0.0
@@ -197,7 +196,7 @@ def main():
         history['train_loss'].append(avg_loss)
         history['train_acc'].append(avg_acc)
 
-        # ===== VALIDATION =====
+        #  VALIDATION 
         model.eval()
         total_val_loss = 0.0
         all_preds = []
@@ -246,7 +245,7 @@ def main():
     plt.close() 
 
 
-    # ===== FINAL EVALUATION =====
+    #  FINAL EVALUATION 
     model.eval()
     with torch.no_grad():
         logits = model(X_test_tensor).squeeze().cpu().numpy()
@@ -264,7 +263,7 @@ def main():
     print("\n--- Final Classification Report ---\n")
     print(report)
 
-    # ===== SAVE RESULTS =====
+    #  SAVE RESULTS 
     epoch_ticks = range(0, NUM_EPOCHS + 1, 2)
     fig, axes = plt.subplots(1, 3, figsize=(18, 5))
 
